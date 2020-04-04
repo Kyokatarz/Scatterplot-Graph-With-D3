@@ -2,6 +2,26 @@ svg{
     background-color: pink;
 }
 
-text{
+.dot{
+    z-index: 1;
    
+}
+
+rect{
+   fill: blue;
+}
+
+
+#tooltip{
+    fill: yellow;
+    z-index: 99;
+}
+
+.noDoping{
+
+    fill: aqua; 
+}
+
+.Doping{
+    fill: red;
 }
