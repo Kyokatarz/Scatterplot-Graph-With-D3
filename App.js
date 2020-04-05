@@ -8,8 +8,8 @@ fetch(url).then(response => response.json())
 const w = 800,
       h = 600,
       padding = 100,
-      tooltipW= 250,
-      tooltipH=100;
+      tooltipW= 200,
+      tooltipH=75;
     
     //Convert data.Time to Date Obj
 const convertedToDate = data.map(d =>{
@@ -46,47 +46,6 @@ const yScale = d3.scaleLinear()
 const yAxis = d3.axisLeft(yScale).tickFormat(d3.timeFormat('%M:%S'));
 const xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d'));
     
-    
-        
-
-
-   document.getElementById('test').textContent = yMax;
-       
-    //Create circles
-    svg.selectAll('circles')
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('class','dot')
-        .attr('class', d=>{
-        if (d.Doping){
-            return legendKeys[1]
-        } else return legendKeys[0];
-    })
-        .attr('cx', (d,i) => xScale(d.Year))
-        .attr('cy', (d,i) => yScale(convertedToDate[i]))
-        .attr('data-yvalue', (d,i) => yScale(convertedToDate[i]))
-        .attr('data-xvalue',(d,i) => xScale(d.Year))
-        .attr('r', 8)
-        .on('mouseover', (d,i)=>{
-            if (w-xScale(d.Year)>=tooltipW){
-            tooltip.attr('x', xScale(d.Year) +10 )
-                    .attr('y', yScale(convertedToDate[i]) +10)
-                    .attr('style','opacity: 1')
-            } else {
-                tooltip.attr('x', xScale(d.Year) - tooltipW/2 )
-                    .attr('y', yScale(convertedToDate[i]) -tooltipH -10)
-                    .attr('style','opacity: 1');
-            }
-        
-            /*tooltip.append('text')
-                    .text(d.Name + '(' + d.Nationality+')')*/
-            
-    })  
-        .on('mouseout',(d,i) => {
-        tooltip.attr('style', 'opacity: 0')
-    })
-
     //Call Axes
     svg.append('g')
         .attr('transform', 'translate(0,' + (h-padding) + ')')
@@ -97,24 +56,58 @@ const xAxis = d3.axisBottom(xScale).tickFormat(d3.format('d'));
         .attr('transform', 'translate(' + padding + ',0)')
         .attr('id','y-axis')
         .call(yAxis);
+       
+    //Create circles
+const circles = svg.selectAll('circles')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', d=>{
+        if (d.Doping){
+            return legendKeys[1] + ' dot'
+        } else return legendKeys[0] + ' dot';
+    })
+        .attr('cx', (d,i) => xScale(d.Year))
+        .attr('cy', (d,i) => yScale(convertedToDate[i]))
+        .attr('data-yvalue', (d,i) => yScale(convertedToDate[i]))
+        .attr('data-xvalue',(d,i) => xScale(d.Year))
+        
+        .attr('r', 8)
+        .attr('stroke', 'black')
+        .attr('stroke-width',1)
+        .on('mouseover', (d,i)=>{
+            if(tooltipW < w - xScale(d.Year)){
+                tooltip.attr('style', 'transform: translate('+ ( xScale(d.Year) + 10) + 'px,'
+                + ((yScale(convertedToDate[i])+10)+ 'px)'))  
+            } else {
+                tooltip.attr('style', 'transform: translate('+ ( xScale(d.Year) - tooltipW) + 'px,'
+                + ((yScale(convertedToDate[i])+10)+ 'px)'))
+            }
+                   
+
+     //set Content in Tooltip      
+    document.getElementById('tooltip').innerHTML = d.Name + ' (' + d.Nationality + ')<br>' + 'Year: ' + d.Year + '; Time ' + d.Time + '<br><span class="description">' + d.Doping + '</span>' ;
+    })  
+        .on('mouseout',(d,i) => {
+        tooltip.attr('style', 'opacity: 0 ')
+        
+    })
+
     
     //Create Title
     svg.append('text')
         .text('Doping in Professional Bicycle Racing')
-        .attr('x', w/2-100)
+        .attr('x', w/2-200)
         .attr('y',padding/2)
         .attr('id','title')
     
     //Create Tooltip
-const tooltip = 
-      svg.append('rect')
-        .attr('style','opacity: 1')
-        .attr('width',tooltipW)
-        .attr('height', tooltipH)
+const tooltip = d3.select('#svgContainer')
+        .append('div')
+        .attr('style','opacity: 0')
         .attr('id','tooltip')
-        .append('text')
-        .text('placeholder')
-    
+        
+
     //Create Legend
 const legend = svg.selectAll('nodes')
         .data(legendKeys)
@@ -126,6 +119,8 @@ const legend = svg.selectAll('nodes')
         .attr('y',(d,i) => h/4 - (20 *i))  
         .attr('width', 7)
         .attr('height', 7)
+        .attr('stroke','black')
+        .attr('stroke-width', 1)
 
 
         svg.selectAll('labels')
@@ -136,6 +131,9 @@ const legend = svg.selectAll('nodes')
             if (d == 'noDoping'){
                 return 'Negative to Doping'
             } else return 'Positive to Doping'
+        })
+        .attr('class', (d,i)=>{
+           return d;
         })
         .attr('x', w-175+20)
         .attr('y',(d,i) => h/4 - (20 *i) + 8)  
